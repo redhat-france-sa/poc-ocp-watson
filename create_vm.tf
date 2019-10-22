@@ -368,19 +368,3 @@ resource "azurerm_virtual_machine" "cacib_bastion_vm" {
     }
 }
 
-resource "azurerm_network_interface" "cacib_ocp_master0_private_nic" {
-    name                      = "cacib-ocp-master0-private-vnic"
-    location                  = var.location
-    resource_group_name       = "${azurerm_resource_group.myterraformgroup.name}"
-    # network_security_group_id = "${azurerm_network_security_group.myterraformnsg.id}"
-
-    ip_configuration {
-        name                          = "cacib-ocp-master0-private-vnic-config"
-        subnet_id                     = "${azurerm_subnet.myterraformprivatesubnet.id}"
-        private_ip_address_allocation = "Dynamic"
-    }
-
-    tags = {
-        environment = "CA-CIB OCP Terraform Setup"
-    }
-}

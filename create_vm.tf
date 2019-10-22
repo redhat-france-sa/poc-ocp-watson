@@ -11,6 +11,18 @@ variable "master_vm_size" {
   default = "Standard_DS3_v2"
 }
 
+variable "worker_vm_size" {
+  default = "Standard_D4s_v3"
+}
+
+variable "master_count" {
+  default = 3
+}
+
+variable "worker_count" {
+  default = 3
+}
+
 resource "azurerm_resource_group" "myterraformgroup" {
     name     = "cacib-ocp-disconnected-rg"
     location = var.location
@@ -216,14 +228,15 @@ resource "azurerm_virtual_machine" "cacib_sat_bastion_vm" {
     }
 }
 
-resource "azurerm_network_interface" "cacib_ocp_master0_private_nic" {
-    name                      = "cacib-ocp-master0-private-vnic"
+resource "azurerm_network_interface" "cacib_ocp_master_private_nic" {
+    count                     = var.master_count
+    name                      = "cacib-ocp-master${count.index}-private-vnic"
     location                  = var.location
     resource_group_name       = "${azurerm_resource_group.myterraformgroup.name}"
     # network_security_group_id = "${azurerm_network_security_group.myterraformnsg.id}"
 
     ip_configuration {
-        name                          = "cacib-ocp-master0-private-vnic-config"
+        name                          = "cacib-ocp-master${count.index}-private-vnic-config"
         subnet_id                     = "${azurerm_subnet.myterraformprivatesubnet.id}"
         private_ip_address_allocation = "Dynamic"
     }
@@ -235,19 +248,20 @@ resource "azurerm_network_interface" "cacib_ocp_master0_private_nic" {
 
 
 # Create private virtual machine
-resource "azurerm_virtual_machine" "cacib_ocp_master0_vm" {
-    name                  = "cacib-ocp-master0"
+resource "azurerm_virtual_machine" "cacib_ocp_master_vm" {
+    count                 = var.master_count
+    name                  = "cacib-ocp-master${count.index}"
     location              = var.location
     resource_group_name   = "${azurerm_resource_group.myterraformgroup.name}"
-    network_interface_ids = ["${azurerm_network_interface.cacib_ocp_master0_private_nic.id}"]
+    network_interface_ids = ["${azurerm_network_interface.cacib_ocp_master_private_nic[count.index].id}"]
     vm_size               = var.master_vm_size
 
-    primary_network_interface_id     = "${azurerm_network_interface.cacib_ocp_master0_private_nic.id}"
+    primary_network_interface_id     = "${azurerm_network_interface.cacib_ocp_master_private_nic[count.index].id}"
     delete_os_disk_on_termination    = true
     delete_data_disks_on_termination = true
 
     storage_os_disk {
-        name              = "cacib-ocp-master0-osdisk"
+        name              = "cacib-ocp-master${count.index}-osdisk"
         caching           = "ReadWrite"
         create_option     = "FromImage"
         managed_disk_type = "Standard_LRS"
@@ -261,14 +275,14 @@ resource "azurerm_virtual_machine" "cacib_ocp_master0_vm" {
     }
 
     os_profile {
-        computer_name  = "cacib-ocp-master0"
-        admin_username = "xymox"
+        computer_name  = "cacib-ocp-master${count.index}"
+        admin_username = "admin"
     }
 
     os_profile_linux_config {
         disable_password_authentication = true
         ssh_keys {
-            path     = "/home/xymox/.ssh/authorized_keys"
+            path     = "/home/admin/.ssh/authorized_keys"
             key_data = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUyJTU41oHiKUNzlwimge7n/3T12fqZKLUO5oanFPHEoaFw3FUOkjflmHhm7AiBJnHmQrOGgv7zZqVX7U8ST2Y4Nk6Se4RCMJSXzFZVh113KE7s+z5GvWQ8bNwdI6w7I/KE3sZPG0vowERI2SZagyRfRiYJ4y5OF/E0N7p9qBeIgQIypQniAq6a9J1jBUB5lGL+DY1XgqtdMiWIBYVyPcy1Rjd5FpHwuTlUCco/l29lbnRd2C9uzqPmsM2XGF5iu82N+JuV4cOjbu4A9SeAmjRHeUp+wvEoxXRm2jukp587FDCcm2mskZ3Oip+RZ7ROOc9QxiEpWXfG8yt/VwYZkjJ"
         }
     }
@@ -368,3 +382,71 @@ resource "azurerm_virtual_machine" "cacib_bastion_vm" {
     }
 }
 
+resource "azurerm_network_interface" "cacib_ocp_worker_private_nic" {
+    count                     = var.worker_count
+    name                      = "cacib-ocp-worker${count.index}-private-vnic"
+    location                  = var.location
+    resource_group_name       = "${azurerm_resource_group.myterraformgroup.name}"
+    # network_security_group_id = "${azurerm_network_security_group.myterraformnsg.id}"
+
+    ip_configuration {
+        name                          = "cacib-ocp-worker${count.index}-private-vnic-config"
+        subnet_id                     = "${azurerm_subnet.myterraformprivatesubnet.id}"
+        private_ip_address_allocation = "Dynamic"
+    }
+
+    tags = {
+        environment = "CA-CIB OCP Terraform Setup"
+    }
+}
+
+
+# Create private virtual machine
+resource "azurerm_virtual_machine" "cacib_ocp_worker_vm" {
+    count                 = var.worker_count
+    name                  = "cacib-ocp-worker${count.index}"
+    location              = var.location
+    resource_group_name   = "${azurerm_resource_group.myterraformgroup.name}"
+    network_interface_ids = ["${azurerm_network_interface.cacib_ocp_master_private_nic[count.index].id}"]
+    vm_size               = var.worker_vm_size
+
+    primary_network_interface_id     = "${azurerm_network_interface.cacib_ocp_worker_private_nic[count.index].id}"
+    delete_os_disk_on_termination    = true
+    delete_data_disks_on_termination = true
+
+    storage_os_disk {
+        name              = "cacib-ocp-worker${count.index}-osdisk"
+        caching           = "ReadWrite"
+        create_option     = "FromImage"
+        managed_disk_type = "Standard_LRS"
+    }
+
+    storage_image_reference {
+        publisher = "RedHat"
+        offer     = "RHEL"
+        sku       = "7.7"
+        version   = "latest"
+    }
+
+    os_profile {
+        computer_name  = "cacib-ocp-worker${count.index}"
+        admin_username = "admin"
+    }
+
+    os_profile_linux_config {
+        disable_password_authentication = true
+        ssh_keys {
+            path     = "/home/admin/.ssh/authorized_keys"
+            key_data = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUyJTU41oHiKUNzlwimge7n/3T12fqZKLUO5oanFPHEoaFw3FUOkjflmHhm7AiBJnHmQrOGgv7zZqVX7U8ST2Y4Nk6Se4RCMJSXzFZVh113KE7s+z5GvWQ8bNwdI6w7I/KE3sZPG0vowERI2SZagyRfRiYJ4y5OF/E0N7p9qBeIgQIypQniAq6a9J1jBUB5lGL+DY1XgqtdMiWIBYVyPcy1Rjd5FpHwuTlUCco/l29lbnRd2C9uzqPmsM2XGF5iu82N+JuV4cOjbu4A9SeAmjRHeUp+wvEoxXRm2jukp587FDCcm2mskZ3Oip+RZ7ROOc9QxiEpWXfG8yt/VwYZkjJ"
+        }
+    }
+
+    boot_diagnostics {
+        enabled = "true"
+        storage_uri = "${azurerm_storage_account.mystorageaccount.primary_blob_endpoint}"
+    }
+
+    tags = {
+        environment = "CA-CIB OCP Terraform Setup"
+    }
+}

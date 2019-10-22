@@ -1,0 +1,53 @@
+- name: "Install bastion initial setup"
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  vars:
+    enabled_repos:
+    - rhel-server-rhscl-7-rpms
+    - rhel-7-server-extras-rpms
+    - rhel-7-server-ansible-2-rpms
+    - rhel-7-server-ansible-2.8-rpms
+    - rhel-7-server-satellite-6.5-rpms
+    - rhel-7-server-satellite-maintenance-6-rpms
+
+    azure_domain: cacib.azure.clustership.com
+
+  tasks:
+    - name: Enable a RHSM repository
+      rhsm_repository:
+        name: "{{ enabled_repos }}"
+        state: enabled
+
+    - name: Ensure dnf installed
+      yum:
+        name: dnf
+        state: latest
+
+    - name: Upgrade all packages
+      dnf:
+        name: '*'
+        state: latest
+
+    - name: Install satellite package
+      dnf:
+        name: satellite
+        state: latest
+
+    - name: Add IP address of sat hosts to /etc/hosts
+      lineinfile:
+        dest: /etc/hosts
+        regexp: '.*{{ ansible_hostname }}$'
+        line: "{{ ansible_default_ipv4.address }} {{ ansible_hostname }}.{{ azure_domain }} {{ ansible_hostname }}"
+        state: present
+      tags:
+        - hosts_config
+
+    - name: install satellite on host
+      shell: satellite-installer --scenario satellite --foreman-admin-username admin --foreman-admin-password redhat --foreman-proxy-puppetca true --foreman-proxy-tftp true --enable-foreman-plugin-discovery > sat-install.log
+      args:
+        chdir: /var/tmp
+        creates: sat-install.log
+      tags:
+        - sat_install

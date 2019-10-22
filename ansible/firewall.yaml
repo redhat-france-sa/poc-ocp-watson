@@ -1,0 +1,19 @@
+#!/usr/bin/env ansible-playbook
+---
+- hosts: all
+  gather_facts: false
+  become: true
+  serial: 1
+  tasks:
+    - name: Move eth1 to private zone
+      firewalld:
+        zone: internal
+        interface: eth1
+        permanent: yes
+        state: enabled
+
+    - name: Allow https
+      firewalld:
+        service: https
+        permanent: yes
+        state: enabled

@@ -45,6 +45,7 @@ resource "azurerm_subnet" "myterraformprivatesubnet" {
     name                 = "cacib-ocp-private-subnet"
     resource_group_name  = "${azurerm_resource_group.myterraformgroup.name}"
     virtual_network_name = "${azurerm_virtual_network.myterraformnetwork.name}"
+    route_table_id       = "${azurerm_route_table.cacibprivateroutetable.id}"
     address_prefix       = "10.5.2.0/24"
 }
 

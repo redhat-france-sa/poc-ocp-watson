@@ -295,7 +295,6 @@ resource "azurerm_network_interface" "cacib_bastion_public_vnic" {
         subnet_id                     = "${azurerm_subnet.cacib_ocp_public_subnet.id}"
         primary                       = true
         private_ip_address_allocation = "Dynamic"
-        public_ip_address_id          = "${azurerm_public_ip.myterraformpublicip.id}"
     }
 
     tags = {

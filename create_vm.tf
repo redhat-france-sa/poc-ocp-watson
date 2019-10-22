@@ -276,13 +276,13 @@ resource "azurerm_virtual_machine" "cacib_ocp_master_vm" {
 
     os_profile {
         computer_name  = "cacib-ocp-master${count.index}"
-        admin_username = "admin"
+        admin_username = "ocpadmin"
     }
 
     os_profile_linux_config {
         disable_password_authentication = true
         ssh_keys {
-            path     = "/home/admin/.ssh/authorized_keys"
+            path     = "/home/ocpadmin/.ssh/authorized_keys"
             key_data = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUyJTU41oHiKUNzlwimge7n/3T12fqZKLUO5oanFPHEoaFw3FUOkjflmHhm7AiBJnHmQrOGgv7zZqVX7U8ST2Y4Nk6Se4RCMJSXzFZVh113KE7s+z5GvWQ8bNwdI6w7I/KE3sZPG0vowERI2SZagyRfRiYJ4y5OF/E0N7p9qBeIgQIypQniAq6a9J1jBUB5lGL+DY1XgqtdMiWIBYVyPcy1Rjd5FpHwuTlUCco/l29lbnRd2C9uzqPmsM2XGF5iu82N+JuV4cOjbu4A9SeAmjRHeUp+wvEoxXRm2jukp587FDCcm2mskZ3Oip+RZ7ROOc9QxiEpWXfG8yt/VwYZkjJ"
         }
     }
@@ -392,7 +392,8 @@ resource "azurerm_network_interface" "cacib_ocp_worker_private_nic" {
     ip_configuration {
         name                          = "cacib-ocp-worker${count.index}-private-vnic-config"
         subnet_id                     = "${azurerm_subnet.myterraformprivatesubnet.id}"
-        private_ip_address_allocation = "Dynamic"
+        private_ip_address_allocation = "Static"
+        private_ip_address            = "10.5.2.${count.index+20}"
     }
 
     tags = {
@@ -407,7 +408,7 @@ resource "azurerm_virtual_machine" "cacib_ocp_worker_vm" {
     name                  = "cacib-ocp-worker${count.index}"
     location              = var.location
     resource_group_name   = "${azurerm_resource_group.myterraformgroup.name}"
-    network_interface_ids = ["${azurerm_network_interface.cacib_ocp_master_private_nic[count.index].id}"]
+    network_interface_ids = ["${azurerm_network_interface.cacib_ocp_worker_private_nic[count.index].id}"]
     vm_size               = var.worker_vm_size
 
     primary_network_interface_id     = "${azurerm_network_interface.cacib_ocp_worker_private_nic[count.index].id}"
@@ -430,13 +431,13 @@ resource "azurerm_virtual_machine" "cacib_ocp_worker_vm" {
 
     os_profile {
         computer_name  = "cacib-ocp-worker${count.index}"
-        admin_username = "admin"
+        admin_username = "ocpadmin"
     }
 
     os_profile_linux_config {
         disable_password_authentication = true
         ssh_keys {
-            path     = "/home/admin/.ssh/authorized_keys"
+            path     = "/home/ocpadmin/.ssh/authorized_keys"
             key_data = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDUyJTU41oHiKUNzlwimge7n/3T12fqZKLUO5oanFPHEoaFw3FUOkjflmHhm7AiBJnHmQrOGgv7zZqVX7U8ST2Y4Nk6Se4RCMJSXzFZVh113KE7s+z5GvWQ8bNwdI6w7I/KE3sZPG0vowERI2SZagyRfRiYJ4y5OF/E0N7p9qBeIgQIypQniAq6a9J1jBUB5lGL+DY1XgqtdMiWIBYVyPcy1Rjd5FpHwuTlUCco/l29lbnRd2C9uzqPmsM2XGF5iu82N+JuV4cOjbu4A9SeAmjRHeUp+wvEoxXRm2jukp587FDCcm2mskZ3Oip+RZ7ROOc9QxiEpWXfG8yt/VwYZkjJ"
         }
     }

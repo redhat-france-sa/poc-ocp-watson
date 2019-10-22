@@ -8,9 +8,13 @@
     - rhel-server-rhscl-7-rpms
     - rhel-7-server-extras-rpms
     - rhel-7-server-ansible-2-rpms
-    - rhel-7-server-ansible-2.8-rpms
+    - rhel-7-server-ansible-2.6-rpms
     - rhel-7-server-satellite-6.5-rpms
     - rhel-7-server-satellite-maintenance-6-rpms
+    - rhel-7-server-rpms
+    - rhel-7-server-ose-3.11-rpms
+    - rhel-7-fast-datapath-rpms
+    
 
     azure_domain: cacib.azure.clustership.com
 

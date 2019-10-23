@@ -103,3 +103,13 @@ variable "azure_compute_subnet" {
   type        = string
   description = "The name of the subnet for worker nodes, either existing or to be created"
 }
+
+#
+# xymox added
+#
+variable "master_count" {
+  type        = number
+  description = "The number of master instances"
+  default     = 3
+}
+

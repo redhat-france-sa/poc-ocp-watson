@@ -9,7 +9,7 @@
     - rhel-7-server-extras-rpms
     - rhel-7-server-ansible-2-rpms
     - rhel-7-server-ansible-2.6-rpms
-    - rhel-7-server-satellite-6.5-rpms
+    - rhel-7-server-satellite-6.6-rpms
     - rhel-7-server-satellite-maintenance-6-rpms
     - rhel-7-server-rpms
     - rhel-7-server-ose-3.11-rpms
@@ -19,23 +19,28 @@
     azure_domain: cacib.azure.clustership.com
 
   tasks:
+    - name: Disable all RHSM repository
+      rhsm_repository:
+        name: "*"
+        state: disabled
+
     - name: Enable a RHSM repository
       rhsm_repository:
         name: "{{ enabled_repos }}"
         state: enabled
 
-    - name: Ensure dnf installed
-      yum:
-        name: dnf
-        state: latest
+    # - name: Ensure dnf installed
+    #   yum:
+    #     name: dnf
+    #     state: latest
 
     - name: Upgrade all packages
-      dnf:
+      yum:
         name: '*'
         state: latest
 
     - name: Install satellite package
-      dnf:
+      yum:
         name: satellite
         state: latest
 
@@ -49,9 +54,10 @@
         - hosts_config
 
     - name: install satellite on host
-      shell: satellite-installer --scenario satellite --foreman-admin-username admin --foreman-admin-password redhat --foreman-proxy-puppetca true --foreman-proxy-tftp true --enable-foreman-plugin-discovery > sat-install.log
-      args:
-        chdir: /var/tmp
-        creates: sat-install.log
+      debug: 
+        msg: satellite-installer --scenario satellite --foreman-admin-username admin --foreman-admin-password redhat --foreman-proxy-puppetca true --foreman-proxy-tftp true --enable-foreman-plugin-discovery > sat-install.log
+      # args:
+      #   chdir: /var/tmp
+      #   creates: sat-install.log
       tags:
         - sat_install

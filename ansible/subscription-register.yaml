@@ -5,13 +5,19 @@
   become: true
   serial: 1
   tasks:
+    - name: Load a variable file
+      include_vars: "{{ lookup('first_found', possible_files) }}"
+      vars:
+        possible_files:
+          - default.yaml
+
     - name: Register and subscribe to multiple pools.
       redhat_subscription:
         state: present
         username: "{{ _rhn_username }}"
         password: "{{ _rhn_password }}"
         pool_ids:
-        - "{{ rhn_pool_id }}"
+        - "{{ _rhn_pool_id }}"
 
 #    - name: Ensure dnf installed
 #      yum:

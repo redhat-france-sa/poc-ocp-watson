@@ -21,3 +21,4 @@ git clone git clone https://github.com/redhat-france-sa/poc-ocp-watson.git
 ansible-playbook -i localhost, --connection=local -vv redhat-registry-mirror.yaml
 
 /tmp/local-registry-setup-v2 
+

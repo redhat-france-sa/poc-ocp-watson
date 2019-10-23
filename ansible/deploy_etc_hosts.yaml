@@ -1,0 +1,20 @@
+- name: "Deploy etc hosts"
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  vars:
+    ocp_hosts: 
+    -    10.5.2.6  cacib-bastion
+    -    10.5.2.4 cacib-ocp-master0
+    -    10.5.2.10 cacib-ocp-master1
+    -    10.5.2.8 cacib-ocp-master2
+    -    10.5.2.20 cacib-ocp-worker0
+    -    10.5.2.21 cacib-ocp-worker1
+    -    10.5.2.22 cacib-ocp-worker2
+    azure_domain: cacib.azure.clustership.com
+
+  tasks:
+    - name: "Build hosts file"
+      lineinfile: dest=/etc/hosts regexp='.*{{ item }}$' line="{{item}}" state=present
+      with_items: "{{ocp_hosts}}"

@@ -22,3 +22,8 @@ ansible-playbook -i localhost, --connection=local -vv redhat-registry-mirror.yam
 
 /tmp/local-registry-setup-v2 
 
+#Deploy etc/hosts from bastion to all ocp cluster
+
+ansible-playbook deploy_etc_hosts
+
+#check preq

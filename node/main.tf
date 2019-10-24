@@ -1,12 +1,12 @@
-resource "azurerm_network_interface" "node@G_private_nic" {
+resource "azurerm_network_interface" "node_private_nic" {
     count                     = var.instance_count
  
-    name                      = "node@G${count.index}-private-vnic"
+    name                      = "node${count.index}-private-vnic"
     location                  = var.region
     resource_group_name       = var.resource_group_name
 
     ip_configuration {
-        name                          = "cacib-ocp-node@G${count.index}-private-vnic-config"
+        name                          = "cacib-ocp-node${count.index}-private-vnic-config"
         subnet_id                     = var.private_subnet_id
         private_ip_address_allocation = "Static"
         private_ip_address            = cidrhost(var.address_space, count.index+552)
@@ -19,22 +19,22 @@ resource "azurerm_network_interface" "node@G_private_nic" {
 
 
 # Create private virtual machine
-resource "azurerm_virtual_machine" "cacib_ocp_node@G_vm" {
+resource "azurerm_virtual_machine" "cacib_ocp_node_vm" {
     count                     = var.instance_count
-    name                      = "cacib-ocp-node@G${count.index}"
+    name                      = "cacib-ocp-node${count.index}"
     location                  = var.region
     resource_group_name       = var.resource_group_name
 
-    network_interface_ids = [element(azurerm_network_interface.node@G_private_nic.*.id, count.index)]
+    network_interface_ids = [element(azurerm_network_interface.node_private_nic.*.id, count.index)]
     vm_size               = var.vm_size
 
-    primary_network_interface_id     = element(azurerm_network_interface.node@G_private_nic.*.id, count.index)
+    primary_network_interface_id     = element(azurerm_network_interface.node_private_nic.*.id, count.index)
 
     delete_os_disk_on_termination    = true
     delete_data_disks_on_termination = true
 
     storage_os_disk {
-        name              = "cacib-ocp-node@G${count.index}-osdisk"
+        name              = "cacib-ocp-node${count.index}-osdisk"
         caching           = "ReadWrite"
         create_option     = "FromImage"
         managed_disk_type = "StandardSSD_LRS"
@@ -48,7 +48,7 @@ resource "azurerm_virtual_machine" "cacib_ocp_node@G_vm" {
     }
 
     os_profile {
-        computer_name  = "cacib-ocp-node@G${count.index}"
+        computer_name  = "cacib-ocp-node${count.index}"
         admin_username = var.admin_username
     }
 
@@ -66,7 +66,7 @@ resource "azurerm_virtual_machine" "cacib_ocp_node@G_vm" {
     }
 
     provisioner "local-exec" {
-      command = "echo ${azurerm_network_interface.node@G_private_nic[count.index].ip_configuration[0].private_ip_address} ${self.name} >> private-ips.txt"
+      command = "echo ${azurerm_network_interface.node_private_nic[count.index].ip_configuration[0].private_ip_address} ${self.name} >> private-ips.txt"
     }
 
     tags = {

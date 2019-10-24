@@ -1,0 +1,16 @@
+#!/usr/bin/env ansible-playbook
+---
+- hosts: all
+  gather_facts: false
+  become: true
+  serial: 1
+  vars:
+    rhsm_satellite_url: https://10.5.2.4
+  tasks:
+    - name: SATELLITE 6 | Install katello-ca-consumer
+      yum:
+        name: "{{ rhsm_satellite_url }}/pub/katello-ca-consumer-latest.noarch.rpm"
+        state: present
+        validate_certs: no
+        disable_gpg_check: yes
+      register: katello_rpm

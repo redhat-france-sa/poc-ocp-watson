@@ -9,7 +9,7 @@ resource "azurerm_network_interface" "master_private_nic" {
         name                          = "cacib-ocp-master${count.index}-private-vnic-config"
         subnet_id                     = var.private_subnet_id
         private_ip_address_allocation = "Static"
-        private_ip_address            = cidrhost(var.address_space, count.index+552)
+        private_ip_address            = cidrhost(var.address_space, count.index+532)
     }
 
     tags = {

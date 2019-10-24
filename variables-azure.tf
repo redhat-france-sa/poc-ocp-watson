@@ -113,3 +113,9 @@ variable "master_count" {
   default     = 3
 }
 
+variable "node_count" {
+  type        = number
+  description = "The number of node instances"
+  default     = 3
+}
+

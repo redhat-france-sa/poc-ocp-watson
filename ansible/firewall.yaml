@@ -17,3 +17,10 @@
         service: https
         permanent: yes
         state: enabled
+
+    - name: Allow squid
+      firewalld:
+        service: squid
+        zone: internal
+        permanent: yes
+        state: enabled

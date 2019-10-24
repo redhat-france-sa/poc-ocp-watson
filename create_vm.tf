@@ -27,6 +27,10 @@ variable "azure_master_vm_size" {
   default = "Standard_DS3_v2"
 }
 
+variable "azure_node_vm_size" {
+  default = "Standard_DS3_v2"
+}
+
 module "bootstrap" {
   source              = "./bootstrap"
   resource_group_name = azurerm_resource_group.main.name
@@ -69,12 +73,33 @@ module "master" {
   resource_group_name = azurerm_resource_group.main.name
   region              = var.azure_region
   vm_size             = var.azure_master_vm_size
-  public_subnet_id           = azurerm_subnet.cacib_ocp_public_subnet.id
-  private_subnet_id          = azurerm_subnet.myterraformprivatesubnet.id
+  public_subnet_id    = azurerm_subnet.cacib_ocp_public_subnet.id
+  private_subnet_id   = azurerm_subnet.myterraformprivatesubnet.id
   tags                = local.tags
   storage_account     = azurerm_storage_account.mystorageaccount
   nsg_name            = azurerm_network_security_group.myterraformnsg.id
   instance_count      = var.master_count
+  
+  #
+  # TODO: Refactor this
+  #
+  address_space       = var.address_space
+
+  ssh_key_private     = var.ssh_key_private
+  admin_username      = "ocpadmin"
+}
+
+module "node" {
+  source              = "./node"
+  resource_group_name = azurerm_resource_group.main.name
+  region              = var.azure_region
+  vm_size             = var.azure_node_vm_size
+  public_subnet_id    = azurerm_subnet.cacib_ocp_public_subnet.id
+  private_subnet_id   = azurerm_subnet.myterraformprivatesubnet.id
+  tags                = local.tags
+  storage_account     = azurerm_storage_account.mystorageaccount
+  nsg_name            = azurerm_network_security_group.myterraformnsg.id
+  instance_count      = var.node_count
   
   #
   # TODO: Refactor this
